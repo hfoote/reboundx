@@ -149,6 +149,12 @@ void rebx_register_default_params(struct rebx_extras* rebx){
     rebx_register_param(rebx, "ext_y", REBX_TYPE_DOUBLE);
     rebx_register_param(rebx, "ext_z", REBX_TYPE_DOUBLE);
     rebx_register_param(rebx, "ext_enable", REBX_TYPE_INT);
+    rebx_register_param(rebx, "rho", REBX_TYPE_DOUBLE);
+    rebx_register_param(rebx, "x_cen", REBX_TYPE_DOUBLE);
+    rebx_register_param(rebx, "y_cen", REBX_TYPE_DOUBLE);
+    rebx_register_param(rebx, "z_cen", REBX_TYPE_DOUBLE);
+    rebx_register_param(rebx, "b_max", REBX_TYPE_DOUBLE);
+    rebx_register_param(rebx, "rad", REBX_TYPE_DOUBLE);
 }
 
 void rebx_register_param(struct rebx_extras* const rebx, const char* name, enum rebx_param_type type){
@@ -355,6 +361,10 @@ struct rebx_force* rebx_load_force(struct rebx_extras* const rebx, const char* n
     }
     else if (strcmp(name, "external_point_mass") == 0){
         force->update_accelerations = rebx_external_point_mass_force;
+        force->force_type = REBX_FORCE_POS;
+    }
+    else if (strcmp(name, "solid_sphere") == 0){
+        force->update_accelerations = rebx_sphere_force;
         force->force_type = REBX_FORCE_POS;
     }
     else{
