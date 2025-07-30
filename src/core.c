@@ -153,7 +153,6 @@ void rebx_register_default_params(struct rebx_extras* rebx){
     rebx_register_param(rebx, "x_cen", REBX_TYPE_DOUBLE);
     rebx_register_param(rebx, "y_cen", REBX_TYPE_DOUBLE);
     rebx_register_param(rebx, "z_cen", REBX_TYPE_DOUBLE);
-    rebx_register_param(rebx, "b_max", REBX_TYPE_DOUBLE);
     rebx_register_param(rebx, "rad", REBX_TYPE_DOUBLE);
 }
 

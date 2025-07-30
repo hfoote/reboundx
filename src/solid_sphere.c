@@ -60,36 +60,33 @@
 #include "reboundx.h"
 
 static void rebx_calculate_sphere_force(struct reb_simulation* const sim, struct reb_particle* const particles, const int N, 
-                                        const double rad, const double rho, const double b_max, const double x_cen, 
+                                        const double rad, const double rho, const double x_cen, 
                                         const double y_cen, const double z_cen){
-    // super naive implementaton for now, this will work better with a wake density than a sphere.
     const double G = sim->G; 
-    const double dr = b_max*2.0/512.0;
-    const double dm = rho*dr*dr*dr; // replace this with density function and move inside the loop for wake implementation
+    const double R3 = rad*rad*rad;
+    const double M = rho * 4.0/3.0 * M_PI * R3;
 
     for (int i=0; i<N; i++){
         const struct reb_particle p = particles[i];
         const int* const ext_enable = rebx_get_param(sim->extras, p.ap, "ext_enable");
-
+        
         if (ext_enable != NULL){
-            for (double x=-b_max; x<b_max; x+=dr){
-                for (double y=-b_max; y<b_max; y+=dr){
-                    for (double z=-b_max; z<b_max; z+=dr){
+            const double dx = p.x - x_cen;
+            const double dy = p.y - y_cen;
+            const double dz = p.z - z_cen;
+            const double r2 = dx*dx + dy*dy + dz*dz;
+            double prefac;
 
-                        if (pow(pow(x-x_cen, 2) + pow(y-y_cen, 2) + pow(z-z_cen, 2), 0.5) <= rad){
-                            const double dx = p.x - x;
-                            const double dy = p.y - y;
-                            const double dz = p.z - z;
-                            const double r2 = dx*dx + dy*dy + dz*dz;
-                            const double prefac = -G*dm*pow(r2, (-1.5));
+            if (r2 < (rad*rad)){
+                prefac = -G*M/R3;
+            } 
+            else {
+                prefac = -G*M*pow(r2, (-1.5));
+            }
 
-                            particles[i].ax += prefac*dx;
-                            particles[i].ay += prefac*dy;
-                            particles[i].az += prefac*dz;
-                        }
-                    }
-                }
-            }   
+            particles[i].ax += prefac*dx;
+            particles[i].ay += prefac*dy;
+            particles[i].az += prefac*dz;
         }
     }
 }
@@ -98,13 +95,12 @@ void rebx_sphere_force(struct reb_simulation* const sim, struct rebx_force* cons
 
     const double* const rad = rebx_get_param(sim->extras, force->ap, "rad");
     const double* const rho = rebx_get_param(sim->extras, force->ap, "rho");
-    const double* const b_max = rebx_get_param(sim->extras, force->ap, "b_max");
     const double* const x_cen = rebx_get_param(sim->extras, force->ap, "x_cen");
     const double* const y_cen = rebx_get_param(sim->extras, force->ap, "y_cen");
     const double* const z_cen = rebx_get_param(sim->extras, force->ap, "z_cen");
 
-    if ((rad != NULL) & (rho != NULL) & (b_max != NULL) & (x_cen != NULL) & (y_cen != NULL) & (z_cen != NULL)){
-        rebx_calculate_sphere_force(sim, particles, N, *rad, *rho, *b_max, *x_cen, *y_cen, *z_cen);  
+    if ((rad != NULL) & (rho != NULL) & (x_cen != NULL) & (y_cen != NULL) & (z_cen != NULL)){
+        rebx_calculate_sphere_force(sim, particles, N, *rad, *rho, *x_cen, *y_cen, *z_cen);  
     }
 }
 
